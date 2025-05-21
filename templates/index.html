@@ -1,0 +1,25 @@
+{% block content %} {%
+include "base.html" %}
+<body>
+
+<div class="px-4 py-5 my-5 text-center">
+    <img class="d-block mx-auto mb-4 img-fluid col-6 col-xl-3" style="filter: drop-shadow(0 0 0.2rem green);border-radius:25px;"
+         src="{{ url_for('static',filename='assets/tts_generate_logo.png') }}" alt="tts logo image"
+         >
+    <h1 class="display-5 fw-bold text-body-emphasis">{{description.page_title}}</h1>
+    <div class="col-lg-6 mx-auto"><p class="lead mb-4">{{description.page_description}}</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <button type="button" class="btn btn-success btn-lg px-4 gap-3">Add your pdf</button>
+            <button type="button" class="btn btn-outline-secondary btn-lg px-4">Do something else</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
+        crossorigin="anonymous"></script>
+
+</body>
+
+{% endblock %}

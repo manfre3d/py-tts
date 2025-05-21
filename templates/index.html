@@ -3,14 +3,24 @@ include "base.html" %}
 <body>
 
 <div class="px-4 py-5 my-5 text-center">
-    <img class="d-block mx-auto mb-4 img-fluid col-6 col-xl-3" style="filter: drop-shadow(0 0 0.2rem green);border-radius:25px;"
+    <img class="d-block mx-auto mb-4 img-fluid col-6 col-xl-3"
+         style="filter: drop-shadow(0 0 0.2rem green);border-radius:25px;"
          src="{{ url_for('static',filename='assets/tts_generate_logo.png') }}" alt="tts logo image"
-         >
+    >
     <h1 class="display-5 fw-bold text-body-emphasis">{{description.page_title}}</h1>
     <div class="col-lg-6 mx-auto"><p class="lead mb-4">{{description.page_description}}</p>
         <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-            <button type="button" class="btn btn-success btn-lg px-4 gap-3">Add your pdf</button>
-            <button type="button" class="btn btn-outline-secondary btn-lg px-4">Do something else</button>
+<!--            <button type="button" class="btn btn-outline-secondary btn-lg px-4">Play your audio</button>-->
+        <form action="{{ url_for('upload') }}" class="row" method="post" enctype="multipart/form-data" >
+            <button type="submit" class="btn btn-success m-4 btn-lg px-4 gap-3">Convert your pdf</button>
+<!--            <label for="doc_pdf">Inserisci il tuo pdf</label>-->
+            <input type="file" id="doc_pdf"  name="doc_pdf" accept=".pdf" required="required"/>
+            <audio controls>
+                <source src="{{ url_for('static',filename='assets/output.mp3')}}" type="audio/mp3">
+            </audio>
+<!--            <button type="submit" class="btn btn-primary btn-block btn-large">Sign me up.</button>-->
+        </form>
+
         </div>
     </div>
 </div>

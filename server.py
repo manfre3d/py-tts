@@ -6,12 +6,12 @@ from pdfminer.high_level import extract_text
 
 
 
-def text_to_speach():
+def text_to_speach(text):
     # Default Voice Implementation
     # data = stream_elements.requestTTS('Lorem Ipsum is simply dummy text.')
 
     # Custom Voice
-    data = stream_elements.requestTTS('Lorem Ipsum is simply dummy text.', stream_elements.Voice.Russell.value)
+    data = stream_elements.requestTTS(text, stream_elements.Voice.Russell.value)
 
     with open('static/assets/output.mp3', '+wb') as file:
         file.write(data)
@@ -26,6 +26,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 @app.route("/")
 def home():
     return render_template("index.html",description=page_description)
+
 @app.route("/upload", methods=["POST","GET"])
 def upload():
     if request.method == "POST":
@@ -37,6 +38,7 @@ def upload():
         #     print(data.readlines())
 
         text = extract_text("static/uploads/uploaded_file.pdf")
+        text_to_speach(text)
         print(text)
     return home()
 

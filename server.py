@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 from utility import page_description, text_to_speech, extract_text_from_pdf, UPLOADED_PDF, AUDIO_PATH, check_upload
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 has_uploaded = False
 UPLOAD_FOLDER = '/tmp/uploads'
@@ -10,9 +12,16 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+print(os.getenv("SECRET_KEY"))
+app.secret_key = os.getenv("SECRET_KEY")
+
 def toggle_upload():
     global has_uploaded
     has_uploaded=check_upload()
+def safe_delete_mp3():
+    file_path = "static/assets/output.mp3"
+    if os.path.exists(file_path):
+        os.remove(file_path)
 
 @app.route("/")
 def home():
@@ -22,7 +31,9 @@ def home():
     Returns:
         str: Rendered HTML of the index page with the current page description and upload status.
     """
-    toggle_upload()
+
+    if not session.get("upload"):
+        safe_delete_mp3()
     return render_template("index.html",description=page_description, has_uploaded=has_uploaded)
 
 @app.route("/upload", methods=["POST","GET"])
@@ -45,6 +56,7 @@ def upload():
         text = extract_text_from_pdf(upload_path)
         text_to_speech(text)
         toggle_upload()
+        session["upload"]=True
         # print(text)
     return home()
 

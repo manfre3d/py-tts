@@ -10,16 +10,23 @@ include "base.html" %}
     <h1 class="display-5 fw-bold text-body-emphasis">{{description.page_title}}</h1>
     <div class="col-lg-6 mx-auto"><p class="lead mb-4">{{description.page_description}}</p>
         <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-<!--            <button type="button" class="btn btn-outline-secondary btn-lg px-4">Play your audio</button>-->
-        <form action="{{ url_for('upload') }}" class="row" method="post" enctype="multipart/form-data" >
-            <button type="submit" class="btn btn-success m-4 btn-lg px-4 gap-3">Convert your pdf</button>
-<!--            <label for="doc_pdf">Inserisci il tuo pdf</label>-->
-            <input type="file" id="doc_pdf"  name="doc_pdf" accept=".pdf" required="required"/>
-            <audio controls>
-                <source src="{{ url_for('static',filename='assets/output.mp3')}}" type="audio/mp3">
-            </audio>
-<!--            <button type="submit" class="btn btn-primary btn-block btn-large">Sign me up.</button>-->
-        </form>
+            <!--            <button type="button" class="btn btn-outline-secondary btn-lg px-4">Play your audio</button>-->
+            <form action="{{ url_for('upload') }}" class="row" method="post" enctype="multipart/form-data">
+
+                <div class="input-group mb-3">
+                    <button class="btn btn-success" type="submit" id="inputGroupFileAddon03">Convert your pdf</button>
+                    <input type="file" class="form-control" id="doc_pdf" name="doc_pdf" accept=".pdf"
+                           aria-describedby="inputGroupFileAddon03" aria-label="Upload" required="required">
+                </div>
+<!--                <input type="file" id="doc_pdf" name="doc_pdf" accept=".pdf" required="required"/>-->
+<!--                <button type="submit" class="btn btn-success m-4 btn-lg px-4 gap-3">Convert your pdf</button>-->
+                {% if has_uploaded%}
+                <audio controls id="audio-player">
+                    <source src="{{ url_for('static',filename='assets/output.mp3')}}" type="audio/mp3">
+                </audio>
+                {%endif%}
+                <!--            <button type="submit" class="btn btn-primary btn-block btn-large">Sign me up.</button>-->
+            </form>
 
         </div>
     </div>

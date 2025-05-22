@@ -1,45 +1,33 @@
 from flask import Flask, render_template, request
-from utility import page_description
-from pyt2s.services import stream_elements
+from utility import page_description, text_to_speach, extract_text_from_pdf, UPLOADED_PDF, AUDIO_PATH, check_upload
 import os
-from pdfminer.high_level import extract_text
 
 
-
-def text_to_speach(text):
-    # Default Voice Implementation
-    # data = stream_elements.requestTTS('Lorem Ipsum is simply dummy text.')
-
-    # Custom Voice
-    data = stream_elements.requestTTS(text, stream_elements.Voice.Russell.value)
-
-    with open('static/assets/output.mp3', '+wb') as file:
-        file.write(data)
-
-
+has_uploaded = False
 UPLOAD_FOLDER = './static/uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+def toggle_upload():
+    global has_uploaded
+    has_uploaded=check_upload()
 
 @app.route("/")
 def home():
-    return render_template("index.html",description=page_description)
+    toggle_upload()
+    return render_template("index.html",description=page_description, has_uploaded=has_uploaded)
 
 @app.route("/upload", methods=["POST","GET"])
 def upload():
     if request.method == "POST":
-
         file_pdf = request.files['doc_pdf']
-        file_pdf.save(os.path.join(app.config['UPLOAD_FOLDER'], 'uploaded_file.pdf'))
+        file_pdf.save(os.path.join(app.config['UPLOAD_FOLDER'], UPLOADED_PDF))
 
-        # with open("static/uploads/uploaded_file.pdf", "r", encoding="utf8") as data:
-        #     print(data.readlines())
-
-        text = extract_text("static/uploads/uploaded_file.pdf")
+        text = extract_text_from_pdf()
         text_to_speach(text)
-        print(text)
+        toggle_upload()
+        # print(text)
     return home()
 
 if __name__=="__main__":

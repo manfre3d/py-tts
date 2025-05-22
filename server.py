@@ -34,6 +34,8 @@ def home():
 
     if not session.get("upload"):
         safe_delete_mp3()
+        toggle_upload()
+
     return render_template("index.html",description=page_description, has_uploaded=has_uploaded)
 
 @app.route("/upload", methods=["POST","GET"])

@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from utility import page_description, text_to_speach, extract_text_from_pdf, UPLOADED_PDF, AUDIO_PATH, check_upload
+from utility import page_description, text_to_speech, extract_text_from_pdf, UPLOADED_PDF, AUDIO_PATH, check_upload
 import os
 
 

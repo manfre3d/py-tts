@@ -4,7 +4,8 @@ import os
 
 
 has_uploaded = False
-UPLOAD_FOLDER = './static/uploads'
+UPLOAD_FOLDER = '/tmp/uploads'
+pdf_path = os.path.join(UPLOAD_FOLDER, UPLOADED_PDF)
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 app = Flask(__name__)
@@ -34,10 +35,14 @@ def upload():
     """
     
     if request.method == "POST":
-        file_pdf = request.files['doc_pdf']
-        file_pdf.save(os.path.join(app.config['UPLOAD_FOLDER'], UPLOADED_PDF))
 
-        text = extract_text_from_pdf()
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+        file_pdf = request.files['doc_pdf']
+        upload_path = os.path.join(app.config['UPLOAD_FOLDER'], UPLOADED_PDF)
+        file_pdf.save(upload_path)
+
+        text = extract_text_from_pdf(upload_path)
         text_to_speech(text)
         toggle_upload()
         # print(text)

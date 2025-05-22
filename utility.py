@@ -35,7 +35,7 @@ def text_to_speech(text):
     with open(AUDIO_PATH, '+wb') as file:
         file.write(data)
 
-def extract_text_from_pdf():
+def extract_text_from_pdf(path):
     """
     Extracts text content from an uploaded PDF file and removes the file after extraction.
     Returns:
@@ -47,10 +47,9 @@ def extract_text_from_pdf():
         Assumes that UPLOADED_PDF is a global variable containing the filename of the uploaded PDF,
         and that extract_text and os modules are properly imported.
     """
-    
-    pdf_path = f"static/uploads/{UPLOADED_PDF}"
-    text = extract_text(pdf_path)
-    os.remove(pdf_path)
+
+    text = extract_text(path)
+    os.remove(path)
     return text
 
 def check_upload():

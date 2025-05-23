@@ -1,7 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
   const uploadForm = document.getElementById('uploadForm');
   if (!uploadForm) return; // fallback if form doesn't exist
-
+    let audioPlayer= document.getElementById('audio-player');
+    if (audioPlayer){
+        audioPlayer.scrollIntoView({
+          behavior: "smooth"
+        });
+        }
   uploadForm.addEventListener('submit', async function (e) {
     e.preventDefault();
     document.getElementById('spinner-overlay').style.display = 'flex';
@@ -17,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (data.success) {
         window.location.href = "/";
+
     } else {
       //to do add fail alert
     }

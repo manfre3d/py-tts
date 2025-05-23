@@ -39,37 +39,48 @@ def test_home_with_upload_in_session(mock_safe_delete, mock_toggle_upload, mock_
     mock_toggle_upload.assert_not_called()
     mock_render_template.assert_called_once()
     assert response.data == b"rendered"
-@patch("server.home")
-@patch("server.toggle_upload")
+
+@patch("server.os.makedirs")
+@patch("server.url_for")
 @patch("server.text_to_speech")
 @patch("server.extract_text_from_pdf")
-@patch("server.os.makedirs")
-def test_upload_post_success(
-    mock_makedirs,
-    mock_extract_text,
-    mock_tts,
-    mock_toggle_upload,
-    mock_home,
-    client,
-):
-    mock_extract_text.return_value = "dummy text"
-    mock_home.return_value = "home rendered"
+@patch("server.toggle_upload")
+def test_upload_post_success(mock_toggle_upload, mock_extract_text, mock_tts, mock_url_for, mock_makedirs, client):
+    mock_extract_text.return_value = "some text"
+    mock_url_for.return_value = "/static/assets/output.mp3"
     data = {
-        "doc_pdf": (io.BytesIO(b"PDF content"), "test.pdf")
+        'doc_pdf': (io.BytesIO(b"fake pdf content"), 'test.pdf')
     }
-    response = client.post("/upload", data=data, content_type="multipart/form-data")
-    mock_makedirs.assert_called_once()
-    mock_extract_text.assert_called_once()
-    mock_tts.assert_called_once_with("dummy text")
+    response = client.post("/upload", data=data, content_type='multipart/form-data')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert json_data["success"] is True
+    assert json_data["download_url"] == "/static/assets/output.mp3"
     mock_toggle_upload.assert_called_once()
-    mock_home.assert_called_once()
-    assert response.data == b"home rendered"
+    mock_extract_text.assert_called_once()
+    mock_tts.assert_called_once_with("some text")
+    mock_makedirs.assert_called_once()
 
-@patch("server.home")
-def test_upload_get_returns_home(mock_home, client):
-    mock_home.return_value = "home rendered"
-    response = client.get("/upload")
-    mock_home.assert_called_once()
-    assert response.data == b"home rendered"
+@patch("server.os.makedirs")
+@patch("server.toggle_upload")
+@patch("server.extract_text_from_pdf")
+def test_upload_post_exception(mock_extract_text, mock_toggle_upload, mock_makedirs, client):
+    # Simulate extract_text_from_pdf raising an exception
+    mock_extract_text.side_effect = Exception("PDF error")
+    data = {
+        'doc_pdf': (io.BytesIO(b"fake pdf content"), 'test.pdf')
+    }
+    response = client.post("/upload", data=data, content_type='multipart/form-data')
+    assert response.status_code == 500
+    json_data = response.get_json()
+    assert json_data["success"] is False
+    assert "PDF error" in json_data["message"]
+
+
+
+
+
+
+
 
 

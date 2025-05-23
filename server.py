@@ -23,7 +23,7 @@ def safe_delete_mp3():
     if os.path.exists(file_path):
         os.remove(file_path)
 
-@app.route("/",methods=["POST","GET"])
+@app.route("/",methods=["GET"])
 def home():
     """
     Handles the home route by toggling the upload state and rendering the index page.
@@ -37,7 +37,7 @@ def home():
 
     return render_template("index.html",description=page_description, has_uploaded=has_uploaded)
 
-@app.route("/upload", methods=["POST","GET"])
+@app.route("/upload", methods=["POST"])
 def upload():
     """
     Handles file upload via POST request, saves the uploaded PDF to the server, extracts text from the PDF,

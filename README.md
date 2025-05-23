@@ -4,7 +4,10 @@
 
 **py-tts** is a Python-based web application that converts PDF documents to speech audio files. Built with Flask and Jinja2, it allows users to upload a PDF, extracts the text, and generates an audio file using a text-to-speech engine.
 
-![image of the py-tts app](static/assets/image.png)
+<p align="center">
+    <img src="static/assets/image.png" alt="image of the py-tts app">
+</p>
+
 ## Features
 
 - Upload PDF files and convert their text to speech

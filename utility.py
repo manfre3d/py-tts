@@ -1,4 +1,5 @@
 from gtts import gTTS
+from pyt2s.services import stream_elements
 from pdfminer.high_level import extract_text
 import textwrap
 import os
@@ -44,9 +45,12 @@ def generate_audio_chunks(chunks):
     """    
     audio_files=[]
     for i, chunk in enumerate(chunks):
-        tts = gTTS(chunk, lang='en')
+        data = stream_elements.requestTTS(chunk, stream_elements.Voice.Matthew.value)
         file_name = f"{AUDIO_PATH.split('.')[0]}{i + 1}.mp3"
-        tts.save(file_name)
+        with open(file_name, '+wb') as file:
+            file.write(data)
+        # tts = gTTS(chunk, lang='en')
+        # tts.save(file_name)
         audio_files.append(file_name)
     return audio_files
 

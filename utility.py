@@ -1,18 +1,54 @@
-from pyt2s.services import stream_elements
+from gtts import gTTS
 from pdfminer.high_level import extract_text
+import textwrap
 import os
-
 
 AUDIO_PATH='static/assets/output.mp3'
 UPLOADED_PDF="uploaded_file.pdf"
 
 page_description={
     "page_title": "Text to speech PDF",
-    "page_description": "Educational app for Text to speech conversione!\n"
-                        "The app aims to take a pdf input and transfot the text of the file in speech that you can play back to yourself",
-
+    "page_description": 'Educational app for Text to speech conversion and download!\n '
+                        'Upload your PDF, click "Convert," and after processing, listen '
+                        'or download the audio.'
 
 }
+def merge_mp3_files_binary(file_paths, output_path):
+    """
+    Merges multiple MP3 files into a single output file using binary concatenation.
+    Args:
+        file_paths (list of str): List of paths to the MP3 files to be merged, in the desired order.
+        output_path (str): Path where the merged MP3 file will be saved.
+    """
+    with open(output_path, 'wb') as outfile:
+        for file_path in file_paths:
+            with open(file_path, 'rb') as infile:
+                outfile.write(infile.read())
+
+
+def delete_chunks(audio_files):
+    """
+    Deletes the specified audio files from the filesystem.
+    Args:
+        audio_files (list of str): A list of file paths to audio files that should be deleted.
+    """
+    for path in audio_files:
+        os.remove(path)
+def generate_audio_chunks(chunks):
+    """
+    Generate document audio chunks
+    Args:
+        chunks (list): List of text chunks to be converted to audio.
+    Returns:
+        list: List of file paths for the generated audio files.
+    """    
+    audio_files=[]
+    for i, chunk in enumerate(chunks):
+        tts = gTTS(chunk, lang='en')
+        file_name = f"{AUDIO_PATH.split(".")[0]}{i + 1}.mp3"
+        tts.save(file_name)
+        audio_files.append(file_name)
+    return audio_files
 
 def text_to_speech(text):
     """
@@ -21,31 +57,30 @@ def text_to_speech(text):
         text (str): The text to be converted to speech.
     Returns:
         None
-    Notes:
-        - Uses the 'stream_elements.requestTTS' function with a custom voice (Russell).
-        - The resulting audio data is written to a file specified by AUDIO_PATH.
     """
     
-    # Default Voice Implementation
-    # data = stream_elements.requestTTS('Lorem Ipsum is simply dummy text.')
+    def split_text(text, max_chars=500):
+        """
+        Splits the text into chunks of a specified maximum number of characters (default 500).
+        Args:
+            text (str): The text to be split.
+            max_chars (int): The maximum number of characters per chunk.
+        Returns:
+            list: A list of text chunks, each with a maximum length of max_chars.
+        """
+        return textwrap.wrap(text, max_chars, break_long_words=False, break_on_hyphens=False)
 
-    # Custom Voice
-    data = stream_elements.requestTTS(text, stream_elements.Voice.Russell.value)
+    chunks = split_text(text)
 
-    with open(AUDIO_PATH, '+wb') as file:
-        file.write(data)
+    audio_files = generate_audio_chunks(chunks)
+    merge_mp3_files_binary(audio_files, AUDIO_PATH)
+    delete_chunks(audio_files)
 
 def extract_text_from_pdf(path):
     """
     Extracts text content from an uploaded PDF file and removes the file after extraction.
     Returns:
         str: The extracted text from the PDF file.
-    Raises:
-        FileNotFoundError: If the PDF file does not exist.
-        Exception: If there is an error during text extraction or file removal.
-    Note:
-        Assumes that UPLOADED_PDF is a global variable containing the filename of the uploaded PDF,
-        and that extract_text and os modules are properly imported.
     """
 
     text = extract_text(path)

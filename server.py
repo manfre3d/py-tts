@@ -27,7 +27,6 @@ def safe_delete_mp3():
 def home():
     """
     Handles the home route by toggling the upload state and rendering the index page.
-
     Returns:
         str: Rendered HTML of the index page with the current page description and upload status.
     """

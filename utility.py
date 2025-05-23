@@ -45,7 +45,7 @@ def generate_audio_chunks(chunks):
     audio_files=[]
     for i, chunk in enumerate(chunks):
         tts = gTTS(chunk, lang='en')
-        file_name = f"{AUDIO_PATH.split(".")[0]}{i + 1}.mp3"
+        file_name = f"{AUDIO_PATH.split('.')[0]}{i + 1}.mp3"
         tts.save(file_name)
         audio_files.append(file_name)
     return audio_files

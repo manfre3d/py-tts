@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, jsonify, url_for
 from utility import page_description, text_to_speech, extract_text_from_pdf, UPLOADED_PDF, AUDIO_PATH, check_upload
 import os
 from dotenv import load_dotenv
@@ -23,7 +23,7 @@ def safe_delete_mp3():
     if os.path.exists(file_path):
         os.remove(file_path)
 
-@app.route("/")
+@app.route("/",methods=["POST","GET"])
 def home():
     """
     Handles the home route by toggling the upload state and rendering the index page.
@@ -45,21 +45,26 @@ def upload():
     Returns:
         Response: The rendered home page after processing the uploaded file.
     """
-    
-    if request.method == "POST":
+    try:
+        if request.method == "POST":
 
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-        file_pdf = request.files['doc_pdf']
-        upload_path = os.path.join(app.config['UPLOAD_FOLDER'], UPLOADED_PDF)
-        file_pdf.save(upload_path)
+            file_pdf = request.files['doc_pdf']
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], UPLOADED_PDF)
+            file_pdf.save(upload_path)
 
-        text = extract_text_from_pdf(upload_path)
-        text_to_speech(text)
-        toggle_upload()
-        session["upload"]=True
-        # print(text)
-    return home()
+            text = extract_text_from_pdf(upload_path)
+            text_to_speech(text)
+            toggle_upload()
+            session["upload"]=True
+            # toggle_upload()
+
+            return jsonify(success=True,
+                           download_url=url_for('static', filename=f'assets/{AUDIO_PATH}', _external=False))
+
+    except Exception as e:
+        return jsonify(success=False, message=str(e)), 500
 
 if __name__=="__main__":
     app.run(debug=True)

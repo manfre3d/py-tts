@@ -78,14 +78,14 @@
       <p class="lead mb-4">{{description.page_description}}</p>
       <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
         <form
-          action="{{ url_for('upload') }}"
+          id="uploadForm"
           class="row"
-          method="post"
+          method="POST"
           enctype="multipart/form-data"
         >
           <div class="input-group mb-3 col-12">
             <button
-              class="btn btn-success  col-12 my-2 col-sm-3"
+              class="btn btn-success col-12 my-2 col-sm-3"
               type="submit"
               id="inputGroupFileAddon03"
             >
@@ -107,7 +107,7 @@
               type="download"
               href="{{url_for('static',filename='assets/output.mp3')}}"
               download="converted_pdf"
-              id="inputGroupFileAddon04"
+              id="btn_download"
             >
               Download Here or Listen below
             </a>
@@ -122,6 +122,12 @@
           </audio>
           {%endif%}
         </form>
+        <div id="spinner-overlay">
+          <div class="spinner-container">
+            <div class="loader"></div>
+            <p>Processing... Please wait</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -19,7 +19,7 @@
           method="post"
           enctype="multipart/form-data"
         >
-          <div class="input-group mb-3">
+          <div class="input-group mb-3  col-12 col-sm-3">
             <button
               class="btn btn-success"
               type="submit"
@@ -29,7 +29,7 @@
             </button>
             <input
               type="file"
-              class="form-control"
+              class="form-control  col-12 col-sm-3"
               id="doc_pdf"
               name="doc_pdf"
               accept=".pdf"
@@ -37,6 +37,18 @@
               aria-label="Upload"
               required="required"
             />
+            {% if has_uploaded%}
+            <a
+              class="btn btn btn-success col-12 col-sm-3"
+              type="download"
+              href="{{url_for('static',filename='assets/output.mp3')}}"
+              download="converted_pdf"
+              id="inputGroupFileAddon04"
+            >
+              Download your pdf
+            </a>
+            {%endif%}
+
           </div>
           {% if has_uploaded%}
           <audio controls id="audio-player">

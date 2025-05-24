@@ -3,6 +3,8 @@ import os
 import pytest
 from unittest.mock import patch, MagicMock
 from server import app, UPLOADED_PDF
+from unittest.mock import patch
+from server import app
 
 
 @pytest.fixture
@@ -75,6 +77,35 @@ def test_upload_post_exception(mock_extract_text, mock_toggle_upload, mock_maked
     json_data = response.get_json()
     assert json_data["success"] is False
     assert "PDF error" in json_data["message"]
+    
+@patch("server.safe_delete_mp3")
+def test_reset_success(mock_safe_delete_mp3, client):
+    # Set session upload to True to test if it is cleared
+    with client.session_transaction() as sess:
+        sess["upload"] = True
+
+    response = client.post("/reset")
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert json_data["success"] is True
+    mock_safe_delete_mp3.assert_called_once()
+
+    # Check that session "upload" is removed
+    with client.session_transaction() as sess:
+        assert "upload" not in sess
+
+@patch("server.safe_delete_mp3")
+def test_reset_when_upload_not_in_session(mock_safe_delete_mp3, client):
+    # Ensure "upload" is not in session
+    with client.session_transaction() as sess:
+        sess.pop("upload", None)
+
+    response = client.post("/reset")
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert json_data["success"] is True
+    mock_safe_delete_mp3.assert_called_once()
+
 
 
 

@@ -66,5 +66,18 @@ def upload():
     except Exception as e:
         return jsonify(success=False, message=str(e)), 500
 
+@app.route("/reset", methods=["POST"])
+def reset():
+    """
+    Resets the upload state, deletes the generated MP3 file, and clears the session upload flag.
+    Returns:
+        Response: JSON indicating reset success.
+    """
+    safe_delete_mp3()
+    session.pop("upload", None)
+    global has_uploaded
+    has_uploaded = False
+    return jsonify(success=True)
+
 if __name__=="__main__":
     app.run(debug=True)

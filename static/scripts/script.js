@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } else {
       //to do add fail alert
+      new bootstrap.Modal(document.getElementById('failureModal')).show();
     }
   });
 });

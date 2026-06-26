@@ -1,4 +1,4 @@
-from pyt2s.services import stream_elements
+from gtts import gTTS
 from pdfminer.high_level import extract_text as _pdf_extract_text
 import textwrap
 import tempfile
@@ -11,6 +11,19 @@ SUPPORTED_VOICES = [
     "Matthew", "Joanna", "Amy", "Brian", "Emma",
     "Russell", "Nicole", "Joey",
 ]
+
+# Maps voice names to gTTS locale accents
+_VOICE_TLD = {
+    "Matthew": "com",
+    "Joanna": "com",
+    "Justin": "com",
+    "Joey":   "com",
+    "Amy":    "co.uk",
+    "Brian":  "co.uk",
+    "Emma":   "co.uk",
+    "Russell": "com.au",
+    "Nicole":  "com.au",
+}
 
 page_description = {
     "page_title": "PDF to Speech",
@@ -38,13 +51,12 @@ def delete_chunks(audio_files):
 
 
 def generate_audio_chunks(chunks, voice="Matthew", progress_callback=None):
+    tld = _VOICE_TLD.get(voice, "com")
     audio_files = []
     for i, chunk in enumerate(chunks):
-        voice_enum = getattr(stream_elements.Voice, voice, stream_elements.Voice.Matthew)
-        data = stream_elements.requestTTS(chunk, voice_enum.value)
+        tts = gTTS(text=chunk, lang='en', tld=tld)
         file_name = os.path.join(_TMP_DIR, f"tts_chunk_{i + 1}.mp3")
-        with open(file_name, 'wb') as f:
-            f.write(data)
+        tts.save(file_name)
         audio_files.append(file_name)
         if progress_callback:
             progress_callback(i + 1, len(chunks))

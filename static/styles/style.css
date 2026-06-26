@@ -1,22 +1,23 @@
-/* Define fade-in animation */
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
-body{
-    height: 100%;
-    background-image: url('../assets/lush_forest.jpeg');
-    background-color: rgb(26 26 26 / 50%);
+body {
+  height: 100%;
+  background-image: url('../assets/lush_forest.jpeg');
+  background-color: rgb(26 26 26 / 50%);
+  background-size: cover;
+  background-attachment: fixed;
 }
 body.loaded * {
   animation: fadeIn 0.6s ease-in;
 }
 
 body, h1, h2, h3, h4, h5, h6, p, a, span {
-color: #F0EAD6;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 400;
+  color: #F0EAD6;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
 }
 h1, h2, h3 {
   background: #F0EAD6;
@@ -24,35 +25,61 @@ h1, h2, h3 {
   -webkit-text-fill-color: transparent;
 }
 
-#spinner-overlay {
+/* --- Drop zone --- */
+#drop-zone {
+  border: 2px dashed rgba(240, 234, 214, 0.3);
+  background: rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s, background-color 0.2s;
+  cursor: pointer;
+  user-select: none;
+}
+#drop-zone:hover {
+  border-color: rgba(240, 234, 214, 0.55);
+}
+#drop-zone.drag-over {
+  border-color: #66bb6a;
+  background: rgba(46, 125, 50, 0.2);
+}
+
+/* --- Progress overlay (replaces spinner) --- */
+#progress-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh; 
+  height: 100vh;
   display: none;
-  justify-content: center; 
-  align-items: center;    
-  background-color: rgba(0, 0, 0, 0.6); 
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.65);
   z-index: 9999;
 }
-
-.spinner-container {
-  text-align: center;
-  color: #fff;
+.progress-box {
+  background: rgba(20, 20, 20, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 2rem 2.5rem;
+  min-width: 320px;
+  color: #F0EAD6;
+}
+.progress-box p {
+  animation: none;
 }
 
-.loader {
-  border: 8px solid #f3f3f3;
-  border-top: 8px solid #2e7d32;
-  border-radius: 50%;
-  width: 80px;
+/* --- WaveSurfer container --- */
+#waveform {
   height: 80px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
 }
 
-@keyframes spin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* --- Form controls dark theme --- */
+.form-select option {
+  background-color: #1a1a1a;
+  color: #F0EAD6;
+}
+.form-check-input:checked {
+  background-color: #2e7d32;
+  border-color: #2e7d32;
 }

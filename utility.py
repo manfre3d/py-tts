@@ -1,5 +1,5 @@
 from pyt2s.services import stream_elements
-from pdfminer.high_level import extract_text
+from pdfminer.high_level import extract_text as _pdf_extract_text
 import textwrap
 import tempfile
 import os
@@ -7,12 +7,17 @@ import os
 AUDIO_PATH = 'static/assets/output.mp3'
 UPLOADED_PDF = "uploaded_file.pdf"
 
+SUPPORTED_VOICES = [
+    "Matthew", "Joanna", "Amy", "Brian", "Emma",
+    "Russell", "Nicole", "Joey",
+]
+
 page_description = {
-    "page_title": "Text to speech PDF",
+    "page_title": "PDF to Speech",
     "page_description": (
-        'Educational app for Text to speech conversion and download!\n '
-        'Upload your PDF, click "Convert," and after processing, listen '
-        'or download the audio.'
+        "Upload a PDF, DOCX, or TXT file and convert its text to audio. "
+        "Choose a voice, optionally clean the text with AI, "
+        "then listen or download the generated MP3."
     ),
 }
 
@@ -28,36 +33,65 @@ def merge_mp3_files_binary(file_paths, output_path):
 
 def delete_chunks(audio_files):
     for path in audio_files:
-        os.remove(path)
+        if os.path.exists(path):
+            os.remove(path)
 
 
-def generate_audio_chunks(chunks):
+def generate_audio_chunks(chunks, voice="Matthew", progress_callback=None):
     audio_files = []
     for i, chunk in enumerate(chunks):
-        data = stream_elements.requestTTS(chunk, stream_elements.Voice.Matthew.value)
+        voice_enum = getattr(stream_elements.Voice, voice, stream_elements.Voice.Matthew)
+        data = stream_elements.requestTTS(chunk, voice_enum.value)
         file_name = os.path.join(_TMP_DIR, f"tts_chunk_{i + 1}.mp3")
-        with open(file_name, 'wb') as file:
-            file.write(data)
+        with open(file_name, 'wb') as f:
+            f.write(data)
         audio_files.append(file_name)
+        if progress_callback:
+            progress_callback(i + 1, len(chunks))
     return audio_files
 
 
-def text_to_speech(text):
+def text_to_speech(text, voice="Matthew", progress_callback=None, output_path=None):
     text = text.strip()
     if not text:
-        raise ValueError("No extractable text found in the PDF.")
+        raise ValueError("No extractable text found in the document.")
 
-    def split_text(text, max_chars=500):
-        return textwrap.wrap(text, max_chars, break_long_words=False, break_on_hyphens=False)
+    if output_path is None:
+        output_path = AUDIO_PATH
+
+    def split_text(t, max_chars=500):
+        return textwrap.wrap(t, max_chars, break_long_words=False, break_on_hyphens=False)
 
     chunks = split_text(text)
-    audio_files = generate_audio_chunks(chunks)
-    merge_mp3_files_binary(audio_files, AUDIO_PATH)
+    audio_files = generate_audio_chunks(chunks, voice=voice, progress_callback=progress_callback)
+    merge_mp3_files_binary(audio_files, output_path)
     delete_chunks(audio_files)
 
 
 def extract_text_from_pdf(path):
-    return extract_text(path)
+    return _pdf_extract_text(path)
+
+
+def extract_text_from_txt(path):
+    with open(path, 'r', encoding='utf-8', errors='replace') as f:
+        return f.read()
+
+
+def extract_text_from_docx(path):
+    import docx
+    doc = docx.Document(path)
+    return '\n'.join(p.text for p in doc.paragraphs if p.text.strip())
+
+
+def extract_text(path):
+    ext = path.rsplit('.', 1)[-1].lower()
+    if ext == 'pdf':
+        return extract_text_from_pdf(path)
+    elif ext == 'txt':
+        return extract_text_from_txt(path)
+    elif ext == 'docx':
+        return extract_text_from_docx(path)
+    raise ValueError(f"Unsupported file type: .{ext}")
 
 
 def check_upload():

@@ -1,27 +1,29 @@
-# py-tts Python Text to Speech
+# py-tts — PDF to Speech
 
-## Overview
-
-**py-tts** is a Python-based web application that converts PDF documents to speech audio files. Built with Flask and Jinja2, it allows users to upload a PDF, extracts the text, and generates an audio file using a text-to-speech engine.
+**py-tts** converts PDF, DOCX, and TXT documents to MP3 audio using text-to-speech. Built with Flask.
 
 <p align="center">
-    <img src="static/assets/preview.png" alt="image of the py-tts app">
+    <img src="static/assets/preview.png" alt="py-tts app preview">
 </p>
 
 ## Features
 
-- Upload PDF files and convert their text to speech
-- Simple web interface with HTML, Bootstrap and Jinja2 templates
-- Audio output (MP3) for playback or download
+- **Drag-and-drop upload** with instant text preview and word count
+- **Real-time progress** via Server-Sent Events — watch chunk-by-chunk as audio is generated
+- **Multiple voices** — Matthew, Joanna, Amy, Brian, Emma, Russell, Nicole, Joey
+- **AI text cleanup** (optional) — GPT-4o-mini removes headers, page numbers, and PDF extraction artifacts before conversion
+- **WaveSurfer.js waveform player** with click-to-seek, play/pause, and variable playback speed
+- **Multi-format support** — PDF, DOCX, and TXT files
+- **REST API** — `POST /api/convert` returns raw MP3 for programmatic access
+- Download generated MP3
+- Responsive Bootstrap 5 design
 
 ## Getting Started
 
 ### Prerequisites
 
 - Python 3.7+
-- Flask
-- pdfminer.six
-- pyt2s (or your preferred TTS library)
+- An `OPENAI_API_KEY` if you want AI text cleanup (optional)
 
 ### Installation
 
@@ -31,47 +33,62 @@ cd py-tts
 pip install -r requirements.txt
 ```
 
-### Running the Application
+### Environment variables
+
+Create a `.env` file in the project root:
+
+| Variable | Required | Description |
+|---|---|---|
+| `SECRET_KEY` | Yes (prod) | Flask session secret key |
+| `OPENAI_API_KEY` | No | Enables AI text cleanup via GPT-4o-mini |
+
+### Running the app
 
 ```bash
-python app.py
+python server.py
 ```
 
 Visit `http://127.0.0.1:5000` in your browser.
 
-## Usage
+### Running tests
 
-1. Upload a PDF file using the web interface.
-2. The app extracts the text and converts it to speech.
-3. Listen to or download the generated audio file.
-
-## Example Code
-
-```python
-from flask import Flask, render_template, request
-from utility import text_to_speach, extract_text_from_pdf, UPLOADED_PDF, AUDIO_PATH, check_upload
-import os
-
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = './static/uploads'
-
-@app.route("/", methods=["GET"])
-def home():
-    has_uploaded = check_upload()
-    return render_template("index.html", has_uploaded=has_uploaded)
-
-@app.route("/upload", methods=["POST"])
-def upload():
-    file_pdf = request.files['doc_pdf']
-    file_pdf.save(os.path.join(app.config['UPLOAD_FOLDER'], UPLOADED_PDF))
-    text = extract_text_from_pdf()
-    text_to_speach(text)
-    return home()
-
-if __name__ == "__main__":
-    app.run(debug=True)
+```bash
+pytest test_server.py test_progress.py test_ai_cleanup.py -v
 ```
+
+## API Reference
+
+A full interactive reference is available at `/api-docs`. Quick overview:
+
+```bash
+# List available voices
+curl http://localhost:5000/api/voices
+
+# Convert a PDF to MP3
+curl -X POST http://localhost:5000/api/convert \
+  -F "file=@document.pdf" \
+  -F "voice=Joanna" \
+  --output audio.mp3
+```
+
+## Architecture
+
+```
+server.py        Flask routes: /upload (async), /progress/<id> SSE, /preview, /reset, /api/*
+utility.py       Text extraction (PDF/DOCX/TXT), TTS pipeline with progress callbacks
+jobs.py          In-process job registry (uuid + queue.Queue) — no Redis needed
+ai_cleanup.py    OpenAI GPT-4o-mini text normalizer with graceful fallback
+```
+
+The upload flow:
+1. `POST /upload` — extracts text synchronously, starts a background thread, returns `{job_id}` in HTTP 202
+2. `GET /progress/<job_id>` — SSE stream; client receives `{chunk, total}` events during conversion, then `{done: true}`
+3. On `done`, the browser redirects to `/` where the WaveSurfer player renders the generated MP3
+
+## Deployment
+
+The app is deployed on [Render](https://py-tts.onrender.com). The `gunicorn` server is configured via the `Procfile`. Per-job audio files are stored in `static/assets/` and cleaned up when the user resets.
 
 ## License
 
-This project is licensed under the MIT License.
+MIT

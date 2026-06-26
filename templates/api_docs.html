@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5" style="max-width:860px;">
+    <div class="mb-4">
+        <a href="/" class="small" style="color:#F0EAD6;opacity:0.7;text-decoration:none;">&#8592; Back to App</a>
+    </div>
+
+    <h1 class="mb-1">API Reference</h1>
+    <p class="lead mb-5" style="opacity:0.7;">
+        py-tts exposes a lightweight REST API for programmatic text-to-speech conversion.
+    </p>
+
+    <!-- Base URL -->
+    <div class="mb-5">
+        <h5 class="mb-2">Base URL</h5>
+        <pre class="rounded p-3" style="background:rgba(0,0,0,0.5);font-size:0.9rem;">https://py-tts.onrender.com</pre>
+    </div>
+
+    <!-- GET /api/voices -->
+    <div class="rounded p-4 mb-4" style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge" style="background:#1565c0;font-size:0.8rem;">GET</span>
+            <code style="font-size:1rem;">/api/voices</code>
+        </div>
+        <p class="mb-3" style="opacity:0.8;">Returns the list of available TTS voices.</p>
+        <h6 class="mb-1 small text-uppercase" style="opacity:0.5;letter-spacing:.05em;">Example</h6>
+        <pre class="rounded p-3 mb-3" style="background:rgba(0,0,0,0.5);font-size:0.82rem;">curl {{ request.host_url }}api/voices</pre>
+        <h6 class="mb-1 small text-uppercase" style="opacity:0.5;letter-spacing:.05em;">Response</h6>
+        <pre class="rounded p-3 mb-0" style="background:rgba(0,0,0,0.5);font-size:0.82rem;">{{ '{"voices": ' + voices | tojson + '}' }}</pre>
+    </div>
+
+    <!-- GET /api/status -->
+    <div class="rounded p-4 mb-4" style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge" style="background:#1565c0;font-size:0.8rem;">GET</span>
+            <code style="font-size:1rem;">/api/status</code>
+        </div>
+        <p class="mb-3" style="opacity:0.8;">Reports whether AI text cleanup is available (requires <code>OPENAI_API_KEY</code>).</p>
+        <h6 class="mb-1 small text-uppercase" style="opacity:0.5;letter-spacing:.05em;">Example</h6>
+        <pre class="rounded p-3 mb-3" style="background:rgba(0,0,0,0.5);font-size:0.82rem;">curl {{ request.host_url }}api/status</pre>
+        <h6 class="mb-1 small text-uppercase" style="opacity:0.5;letter-spacing:.05em;">Response</h6>
+        <pre class="rounded p-3 mb-0" style="background:rgba(0,0,0,0.5);font-size:0.82rem;">{"ai_available": true}</pre>
+    </div>
+
+    <!-- POST /api/convert -->
+    <div class="rounded p-4 mb-4" style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge" style="background:#2e7d32;font-size:0.8rem;">POST</span>
+            <code style="font-size:1rem;">/api/convert</code>
+        </div>
+        <p class="mb-3" style="opacity:0.8;">
+            Converts a PDF, DOCX, or TXT file to MP3. Accepts <code>multipart/form-data</code>.
+            Returns the MP3 file directly as <code>audio/mpeg</code>.
+        </p>
+
+        <h6 class="mb-2 small text-uppercase" style="opacity:0.5;letter-spacing:.05em;">Parameters</h6>
+        <div class="table-responsive mb-3">
+            <table class="table table-sm table-dark table-bordered" style="font-size:0.85rem;">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>file</code></td>
+                        <td>File</td>
+                        <td>Yes</td>
+                        <td>PDF, DOCX, or TXT file (max 16 MB)</td>
+                    </tr>
+                    <tr>
+                        <td><code>voice</code></td>
+                        <td>String</td>
+                        <td>No</td>
+                        <td>TTS voice name (default: <code>Matthew</code>). See <code>/api/voices</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h6 class="mb-1 small text-uppercase" style="opacity:0.5;letter-spacing:.05em;">Example</h6>
+        <pre class="rounded p-3 mb-3" style="background:rgba(0,0,0,0.5);font-size:0.82rem;">curl -X POST {{ request.host_url }}api/convert \
+  -F "file=@document.pdf" \
+  -F "voice=Joanna" \
+  --output audio.mp3</pre>
+
+        <h6 class="mb-1 small text-uppercase" style="opacity:0.5;letter-spacing:.05em;">Error responses</h6>
+        <pre class="rounded p-3 mb-0" style="background:rgba(0,0,0,0.5);font-size:0.82rem;">400  {"error": "Unsupported file type. Accepted: pdf, txt, docx"}
+400  {"error": "Unknown voice. Supported voices: [...]"}
+500  {"error": "&lt;message&gt;"}</pre>
+    </div>
+
+    <!-- Notes -->
+    <div class="rounded p-4" style="background:rgba(46,125,50,0.15);border:1px solid rgba(46,125,50,0.4);">
+        <h6 class="mb-2">Notes</h6>
+        <ul class="mb-0 small" style="opacity:0.8;">
+            <li>The <code>/api/convert</code> endpoint is synchronous. Large documents (&gt;50 pages) may take 30–60 seconds.</li>
+            <li>For real-time progress updates, use the web interface which streams progress via Server-Sent Events.</li>
+            <li>No authentication is required. Rate limiting is enforced by the underlying TTS API.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
